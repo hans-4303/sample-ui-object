@@ -4,7 +4,12 @@ using UnityEngine;
 
 public class ObjectUICanvas : MonoBehaviour
 {
-    GameObject cam;
+    private GameObject cam;
+    [SerializeField]
+    private GameObject worldObject;
+    [SerializeField]
+    private Vector3 offset;
+
     private void Start()
     {
         cam = Camera.main.gameObject;
@@ -14,8 +19,8 @@ public class ObjectUICanvas : MonoBehaviour
     {
         if (cam != null)
         {
-            transform.LookAt(cam.transform);
-            transform.Rotate(0, 180, 0);
+            this.transform.rotation = cam.transform.rotation;
+            this.transform.position = worldObject.transform.position + offset;
         }
     }
 }
