@@ -8,7 +8,9 @@ public class ObjectUICanvas : MonoBehaviour
     [SerializeField]
     private GameObject worldObject;
     [SerializeField]
-    private Vector3 offset;
+    private Vector3 rotationOffset;
+    [SerializeField]
+    private Vector3 positionOffset;
 
     private void Start()
     {
@@ -19,8 +21,8 @@ public class ObjectUICanvas : MonoBehaviour
     {
         if (cam != null)
         {
-            this.transform.rotation = cam.transform.rotation;
-            this.transform.position = worldObject.transform.position + offset;
+            this.transform.rotation = Quaternion.Euler(rotationOffset) * cam.transform.rotation;
+            this.transform.position = worldObject.transform.position + positionOffset;
         }
     }
 }
