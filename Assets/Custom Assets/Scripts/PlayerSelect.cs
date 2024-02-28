@@ -111,6 +111,16 @@ public class PlayerSelect : MonoBehaviour
                 selectableShips.Add(newSelected);
             }
         }
+        else
+        {
+            if(selectableShips.Count > 0)
+            {
+                for(int i = selectableShips.Count - 1; i >= 0; i--)
+                {
+                    DeselectObject(selectableShips[i]);
+                }
+            }
+        }
     }
 
     private void ApplyShaderAndEnableUI (SelectableShip selected)
