@@ -69,12 +69,6 @@ public class PlayerSelect : MonoBehaviour
     private void Update ()
     {
         if (Input.GetMouseButtonDown(0)) SelectObject();
-
-        if (Input.GetMouseButton(0))
-        {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            Debug.DrawRay(ray.origin, ray.direction * 1000, Color.blue);
-        }
     }
 
     /// <summary>
