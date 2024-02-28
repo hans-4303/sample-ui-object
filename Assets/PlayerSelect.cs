@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class PlayerSelect : MonoBehaviour
 {
+    public LayerMask toDirectObject;
     private RaycastHit hit;
 
     private void Update ()
@@ -22,13 +23,15 @@ public class PlayerSelect : MonoBehaviour
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out hit))
         {
-            string objectName = hit.collider.gameObject.name;
-            Debug.Log(objectName);
+            //string objectName = hit.collider.gameObject.name;
+            //Debug.Log(objectName);
 
-            if (!hit.transform.TryGetComponent<FreightMove>(out var block)) return;
+            //if (!hit.transform.TryGetComponent<FreightMove>(out var block)) return;
 
-            block.isSelected = !block.isSelected;
-            Debug.Log(block.isSelected);
+            //block.isSelected = !block.isSelected;
+            //Debug.Log(block.isSelected);
+
+            Debug.Log(hit.collider.gameObject.name);
         }
     }
 }
