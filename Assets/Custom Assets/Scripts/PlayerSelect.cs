@@ -4,7 +4,7 @@ using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class SelectableShips
+public class SelectableShip
 {
     private GameObject eachShip;
     private List<MeshRenderer> currentMeshRenderers;
@@ -28,7 +28,7 @@ public class SelectableShips
         set { eachCanvas = value; }
     }
 
-    public SelectableShips (GameObject currentShip)
+    public SelectableShip (GameObject currentShip)
     {
         eachShip = currentShip;
         currentMeshRenderers = currentShip.GetComponentsInChildren<MeshRenderer>(true).ToList();
@@ -44,34 +44,16 @@ public class PlayerSelect : MonoBehaviour
     public LayerMask toDirectObject;
 
     /// <summary>
-    /// <para>셰이더 적용 대상 오브젝트</para>
-    /// </summary>
-    private GameObject tempShip;
-
-    /// <summary>
     /// <para>셰이더 등록 멤버</para>
     /// </summary>
     private Material shader;
 
     /// <summary>
-    /// <para>배 선택 시 메시 렌더러 받아올 멤버</para>
-    /// </summary>
-    private List<MeshRenderer> meshRenderers = new();
-
-    /// <summary>
-    /// <para>배 선택 시 캔버스 렌더러 받아올 멤버</para>
-    /// </summary>
-    private Canvas canvas;
-
-    /// <summary>
-    /// <para>렌더러 돌면서 셰이더 추가하거나 지울 멤버</para>
-    /// </summary>
-    private readonly List<Material> materials = new();
-
-    /// <summary>
     /// <para>레이캐스트 대상 멤버</para>
     /// </summary>
     private RaycastHit hit;
+
+    private readonly List<SelectableShip> selectableShips = new();
 
     /// <summary>
     /// <para>Start 시 셰이더 할당</para>
@@ -118,45 +100,48 @@ public class PlayerSelect : MonoBehaviour
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out hit, Mathf.Infinity, toDirectObject))
         {
-            if (tempShip != null) return;
+            GameObject hitObject = hit.collider.gameObject;
 
-            tempShip = hit.collider.gameObject;
-            meshRenderers = tempShip.GetComponentsInChildren<MeshRenderer>().ToList();
-            canvas = tempShip.GetComponentInChildren<Canvas>();
+            var selectedShip = selectableShips.FirstOrDefault(el => el.EachShip == hitObject);
 
-            GameObject table = canvas.GetComponentInChildren<ObjectUI>(true).gameObject;
-
-            foreach (MeshRenderer meshRenderer in meshRenderers)
+            if (selectedShip != null)
             {
-                materials.Clear();
-                materials.AddRange(meshRenderer.sharedMaterials);
-                materials.Add(shader);
-
-                meshRenderer.materials = materials.ToArray();
+                Debug.Log("선택 해제");
+                DeselectObject(selectedShip);
             }
-
-            table.SetActive(true);
+            else
+            {
+                Debug.Log("선택");
+                SelectableShip newSelected = new(hitObject);
+                ApplyShaderAndEnableUI(newSelected);
+                selectableShips.Add(newSelected);
+            }
         }
-        else
+    }
+
+    private void ApplyShaderAndEnableUI (SelectableShip selected)
+    {
+        foreach (MeshRenderer meshRenderer in selected.CurrentMeshRenderers)
         {
-            if (tempShip == null) return;
-
-            meshRenderers = tempShip.GetComponentsInChildren<MeshRenderer>().ToList();
-            canvas = tempShip.GetComponentInChildren<Canvas>();
-            GameObject table = canvas.GetComponentInChildren<ObjectUI>(true).gameObject;
-
-            foreach (MeshRenderer meshRenderer in meshRenderers)
+            List<Material> materials = new(meshRenderer.sharedMaterials)
             {
-                materials.Clear();
-                materials.AddRange(meshRenderer.sharedMaterials);
-                materials.Remove(shader);
-
-                meshRenderer.materials = materials.ToArray();
-            }
-
-            table.SetActive(false);
-
-            tempShip = null;
+                shader
+            };
+            meshRenderer.materials = materials.ToArray();
         }
+        if (selected.EachCanvas) selected.EachCanvas.gameObject.SetActive(true);
+    }
+
+    private void DeselectObject (SelectableShip selected)
+    {
+        foreach (MeshRenderer meshRenderer in selected.CurrentMeshRenderers)
+        {
+            List<Material> materials = new(meshRenderer.sharedMaterials);
+            materials.Remove(shader);
+            meshRenderer.materials = materials.ToArray();
+        }
+        if (selected.EachCanvas) selected.EachCanvas.gameObject.SetActive(false);
+
+        selectableShips.Remove(selected);
     }
 }
