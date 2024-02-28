@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ObjectUICanvas : MonoBehaviour
+public class ObjectUI : MonoBehaviour
 {
     private GameObject cam;
     [SerializeField]
