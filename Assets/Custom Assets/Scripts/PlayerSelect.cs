@@ -4,6 +4,38 @@ using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 
+public class SelectableShips
+{
+    private GameObject eachShip;
+    private List<MeshRenderer> currentMeshRenderers;
+    private Canvas eachCanvas;
+
+    public GameObject EachShip
+    {
+        get { return eachShip; }
+        set { eachShip = value; }
+    }
+
+    public List<MeshRenderer> CurrentMeshRenderers
+    {
+        get { return currentMeshRenderers; }
+        set { currentMeshRenderers = value; }
+    }
+
+    public Canvas EachCanvas
+    {
+        get { return eachCanvas; }
+        set { eachCanvas = value; }
+    }
+
+    public SelectableShips (GameObject currentShip)
+    {
+        eachShip = currentShip;
+        currentMeshRenderers = currentShip.GetComponentsInChildren<MeshRenderer>(true).ToList();
+        eachCanvas = currentShip.GetComponentInChildren<Canvas>(true);
+    }
+}
+
 public class PlayerSelect : MonoBehaviour
 {
     /// <summary>
@@ -88,23 +120,11 @@ public class PlayerSelect : MonoBehaviour
         {
             if (tempShip != null) return;
 
-            // Q. 활성화된 오브젝트 VS 비활성화된 오브젝트
             tempShip = hit.collider.gameObject;
-
-            // 활성화된 오브젝트에서는 GetComponentsInChildren을 통해 바로 조회 및 조작 가능했음
             meshRenderers = tempShip.GetComponentsInChildren<MeshRenderer>().ToList();
-
-            // 또 배마다 월드 스페이스 캔버스 하나 씩 두니까 아래 같이 찾을 수 있음
             canvas = tempShip.GetComponentInChildren<Canvas>();
 
-            // 그런데 비활성화된 오브젝트는 위와 같이 GetComponent로 찾을 수 없었음
-
-            // GameObject test = canvas.GetComponentInChildren<ObjectUI>().gameObject;
-            // Debug.Log("Null 뜨면 방법 없음" + test);
-
-            // transform.Find("이름").gameObject;로 찾았을 때는 활성, 비활성 가리지 않고 잘 찾았음
-            // 비활성화된 오브젝트는 무조건 이런 방식으로 이름 적으며 찾아야 하는지 알고 싶음
-            GameObject table = canvas.transform.Find("TableLayout").gameObject;
+            GameObject table = canvas.GetComponentInChildren<ObjectUI>(true).gameObject;
 
             foreach (MeshRenderer meshRenderer in meshRenderers)
             {
@@ -122,11 +142,8 @@ public class PlayerSelect : MonoBehaviour
             if (tempShip == null) return;
 
             meshRenderers = tempShip.GetComponentsInChildren<MeshRenderer>().ToList();
-
             canvas = tempShip.GetComponentInChildren<Canvas>();
-            canvas.enabled = false;
-
-            GameObject table = canvas.transform.Find("TableLayout").gameObject;
+            GameObject table = canvas.GetComponentInChildren<ObjectUI>(true).gameObject;
 
             foreach (MeshRenderer meshRenderer in meshRenderers)
             {
