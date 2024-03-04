@@ -87,6 +87,8 @@ public class PlayerSelect : MonoBehaviour
     /// </summary>
     private readonly List<SelectableShip> selectableShips = new();
 
+    public Material overlayMat;
+
     /// <summary>
     /// <para>Start 시 셰이더 할당</para>
     /// </summary>
@@ -179,7 +181,8 @@ public class PlayerSelect : MonoBehaviour
         {
             List<Material> materials = new(meshRenderer.sharedMaterials)
             {
-                shader
+                overlayMat
+                // shader
             };
             meshRenderer.materials = materials.ToArray();
         }
@@ -209,7 +212,8 @@ public class PlayerSelect : MonoBehaviour
         foreach (MeshRenderer meshRenderer in selected.CurrentMeshRenderers)
         {
             List<Material> materials = new(meshRenderer.sharedMaterials);
-            materials.Remove(shader);
+            materials.Remove(overlayMat);
+            // materials.Remove(shader);
             meshRenderer.materials = materials.ToArray();
         }
         if (selected.EachCanvas) selected.EachCanvas.gameObject.SetActive(false);
