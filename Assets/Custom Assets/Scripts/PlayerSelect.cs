@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
 /// <para>오브젝트 선택과 필터를 위해 클래스 만들고 활용할 수 있어야 함</para>
 /// </summary>
-public class SelectableShip
+public class Ship
 {
     /// <summary>
     /// <para>각 배 오브젝트와 배가 포함하는 메시 렌더러, 캔버스로 구분됨</para>
@@ -47,7 +48,7 @@ public class SelectableShip
     /// </para>
     /// </summary>
     /// <param name="currentShip">배 오브젝트 -> 자식 오브젝트 및 컴포넌트 조회 가능</param>
-    public SelectableShip (GameObject currentShip)
+    public Ship (GameObject currentShip)
     {
         eachShip = currentShip;
         currentMeshRenderers = currentShip.GetComponentsInChildren<MeshRenderer>(true).ToList();
@@ -68,33 +69,30 @@ public class SelectableShip
 public class PlayerSelect : MonoBehaviour
 {
     /// <summary>
-    /// <para>LayerMask를 지정하고 바깥에서 Ship 레이어 작성</para>
-    /// </summary>
-    public LayerMask toDirectObject;
-
-    /// <summary>
-    /// <para>셰이더 등록 멤버</para>
-    /// </summary>
-    private Material shader;
-
-    /// <summary>
     /// <para>레이캐스트 대상 멤버</para>
     /// </summary>
     private RaycastHit hit;
 
     /// <summary>
-    /// <para>선택할 수 있는 배들 리스트</para>
+    /// <para>LayerMask를 지정하고 바깥에서 레이어 작성</para>
     /// </summary>
-    private readonly List<SelectableShip> selectableShips = new();
+    public LayerMask toDirectShip;
+    public LayerMask toDirectSafetyZone;
 
-    public Material overlayMat;
+    public GameObject TBMPanel;
 
     /// <summary>
-    /// <para>Start 시 셰이더 할당</para>
+    /// <para>선택할 수 있는 배들 리스트</para>
     /// </summary>
+    private readonly List<Ship> selectableShips = new();
+    public Material overlayMat;
+
     private void Start ()
     {
-        shader = new Material(Shader.Find("Custom/OutlineShader"));
+        if(TBMPanel != null && TBMPanel.activeSelf)
+        {
+            TBMPanel.SetActive(false);
+        }
     }
 
     /// <summary>
@@ -126,7 +124,7 @@ public class PlayerSelect : MonoBehaviour
     private void SelectObject ()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out hit, Mathf.Infinity, toDirectObject))
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity, toDirectShip))
         {
             GameObject hitObject = hit.collider.gameObject;
 
@@ -135,18 +133,18 @@ public class PlayerSelect : MonoBehaviour
 
             if (selectedShip != null)
             {
-                // Debug.Log("선택 해제");
-
                 DeselectObject(selectedShip);
             }
             else
             {
-                // Debug.Log("선택");
-
-                SelectableShip newSelected = new(hitObject);
+                Ship newSelected = new(hitObject);
                 ApplyShaderAndEnableUI(newSelected);
                 selectableShips.Add(newSelected);
             }
+        }
+        else if (Physics.Raycast(ray, out hit, Mathf.Infinity, toDirectSafetyZone) && TBMPanel != null)
+        {
+            TBMPanel.SetActive(!TBMPanel.activeSelf);
         }
         else
         {
@@ -156,7 +154,10 @@ public class PlayerSelect : MonoBehaviour
                 {
                     DeselectObject(selectableShips[i]);
                 }
-                // Debug.Log("일괄 해제");
+            }
+            if (TBMPanel.activeSelf)
+            {
+                TBMPanel.SetActive(false);
             }
         }
     }
@@ -175,7 +176,7 @@ public class PlayerSelect : MonoBehaviour
     /// </para>
     /// </summary>
     /// <param name="selected">선택할 수 있는 배를 받음</param>
-    private void ApplyShaderAndEnableUI (SelectableShip selected)
+    private void ApplyShaderAndEnableUI (Ship selected)
     {
         foreach (MeshRenderer meshRenderer in selected.CurrentMeshRenderers)
         {
@@ -207,13 +208,12 @@ public class PlayerSelect : MonoBehaviour
     /// </para>
     /// </summary>
     /// <param name="selected"></param>
-    private void DeselectObject (SelectableShip selected)
+    private void DeselectObject (Ship selected)
     {
         foreach (MeshRenderer meshRenderer in selected.CurrentMeshRenderers)
         {
             List<Material> materials = new(meshRenderer.sharedMaterials);
             materials.Remove(overlayMat);
-            // materials.Remove(shader);
             meshRenderer.materials = materials.ToArray();
         }
         if (selected.EachCanvas) selected.EachCanvas.gameObject.SetActive(false);
